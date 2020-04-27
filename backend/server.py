@@ -6,14 +6,14 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
+
 class WordCheckHandler(tornado.web.RequestHandler):
 
     def initialize(self, words_db):
-        # TODO а надо ли делать различия между е и ё?
         self.words_db = words_db
 
     def get(self):
-        word = self.get_query_argument('word')
+        word = self.get_query_argument('word').strip().replace('ё', 'е')
         logging.info('validation called with %s', word)
         self.set_header('Access-Control-Allow-Origin', '*')
         if word in self.words_db:
@@ -34,11 +34,12 @@ class GetPrefixHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.write({'result': random.choice(self.prefixes_db)})
 
+
 def make_app():
     words_db = set()
     with open('zdf-win.txt') as words:
         for word in words:
-            word = word.strip()
+            word = word.strip().replace('ё', 'е')
             if '-' not in word:
                 words_db.add(word)
 
