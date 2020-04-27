@@ -1,0 +1,14 @@
+requests
+lxml
+bs4
+python-crfsuite
+git+https://github.com/Koziev/rutokenizer
+git+https://github.com/Koziev/rupostagger
+git+https://github.com/Koziev/rulemma
+
+# https://github.com/Koziev/rulemma/issues/1
+# https://github.com/Koziev/ruword2tags/blob/master/ruword2tags/ruword2tags.db
+# replace in site-packages/ruword2tags/ruword2tags.db
+git+https://github.com/Koziev/ruword2tags
+
+git+https://github.com/Koziev/rusyllab
