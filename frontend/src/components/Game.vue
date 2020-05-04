@@ -1,101 +1,45 @@
 <template>
     <div class="container game">
-        <div class="row">
-            <div class="col-9">
-                <input
-                    v-focus
-                    class="form-control"
-                    :value="word" type="text"
-                    @input="handleInput"
-                    @keyup.enter="addTypedWord" />
-                <WordsList :typedWords="typedWords" />
-            </div>
-            <div class="col-3">
-                <Timer :secondsLeft="secondsLeft" />
-                <p>{{score}}</p>
-            </div>
-        </div>
+        <component 
+            :is="state" 
+            :basicPrefixLength="basicPrefixLength"
+            :roundStagesDurations="roundStagesDurations"
+            @round-finished="showSubScore"></component>
     </div>
 </template>
 
 <script>
-import WordsList from './game_parts/WordsList.vue'
-import Timer from './game_parts/Timer.vue'
+import Game from './game_parts/Game.vue'
+import Score from './game_parts/Score.vue'
 
 export default {
     name: 'Game',
-    props: ['initialTime', 'prefix'],
+    props: ['rounds'],
     data() {
         return {
-            suffix: '',
-            typedWords: [],
-            timer: null,
-            secondsLeft: this.initialTime,
-            score: 0
+            state: null,
+            currentRound: 0,
+            basicPrefixLength: null,
+            roundStagesDurations: null,
+            score: 0,
         }
     },
     methods: {
-        handleInput(event) {
-            let newSuffix = event.target.value.substring(this.prefix.length);
-            this.suffix = newSuffix;
+        startGame() {
+            this.basicPrefixLength=this.rounds[this.currentRound][0];
+            this.roundStagesDurations=this.rounds[this.currentRound][1];
+            this.state = Game;
         },
-        addTypedWord() {
-            let notTypedBefore = !this.typedWords.includes(this.word);
-            if(notTypedBefore) {
-                fetch('http://localhost:5050/valid?word=' + this.word).then(
-                    response => {
-                        return response.json();
-                    }
-                ).then(
-                    data => {
-                        let valid = data.result;
-                        if (valid) {
-                            this.typedWords.push(this.word);
-                            this.suffix = "";
-                            this.score += 1;
-                        }
-                    }
-                )
-            }
-        },
-        setTimer() {
-            this.clearTimer()
-            this.timer = setInterval(
-                () => {
-                    if(this.secondsLeft > 0) {
-                        this.secondsLeft--;
-                    } else {
-                        this.clearTimer();
-                        this.$emit('game-over', this.score);
-                    }
-                },
-                1000
-            )
-        },
-        clearTimer() {
-            if(this.timer) {
-                clearInterval(this.timer);
-            }
+        showSubScore() {
+            this.state = Score;
         }
     },
     mounted() {
-        this.setTimer();
-    },
-    computed: {
-        word() {
-            return this.prefix + this.suffix
-        }
-    },
-    directives: {
-        focus: {
-            inserted: function (el) {
-                el.focus()
-            }
-        }
+        this.startGame();
     },
     components: {
-        WordsList,
-        Timer
+        Game,
+        Score
     }
 }
 </script>

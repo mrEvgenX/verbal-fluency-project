@@ -27,12 +27,29 @@ class GetPrefixHandler(tornado.web.RequestHandler):
     def initialize(self, words_db):
         # TODO от частоты настраивать уровень сложности
         logging.info('prefix generation called')
-        words_counter = Counter([word[:2] for word in words_db])
+        prefix_length = int(self.get_query_argument('prefix_length').strip())
+        words_counter = Counter([word[:prefix_length] for word in words_db])
         self.prefixes_db = [prefix for prefix, _ in words_counter.most_common(50)]
 
     def get(self):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.write({'result': random.choice(self.prefixes_db)})
+
+
+class WordHinterHandler(tornado.web.RequestHandler):
+
+    def initialize(self, words_db):
+        self.words_db = words_db
+
+    def get(self):
+        prefix = self.get_query_argument('prefix')
+        words = [word.strip().replace('ё', 'е') for word in self.get_query_arguments('word[]')]
+        # print(len([word for word in self.words_db if word.startswith(prefix) and word not in words]))
+        words_counter = Counter([word for word in self.words_db if word.startswith(prefix) and word not in words])
+        for i in words_counter:
+            print(i)
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.write({'result': []})
 
 
 def make_app():
@@ -46,6 +63,7 @@ def make_app():
     return tornado.web.Application([
         (r'/valid', WordCheckHandler, dict(words_db=words_db)),
         (r'/prefix', GetPrefixHandler, dict(words_db=words_db)),
+        (r'/hint', WordHinterHandler, dict(words_db=words_db)),
     ])
 
 

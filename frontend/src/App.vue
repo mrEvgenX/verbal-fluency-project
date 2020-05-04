@@ -3,8 +3,7 @@
         <component 
             :is="currentScreen" 
             @start-game="startGame"
-            initialTime="30"
-            :prefix="prefix"
+            :rounds="rounds"
             @game-over="gameOver"
             :score="score"></component>
     </div>
@@ -20,22 +19,17 @@ export default {
     data() {
         return {
             currentScreen: MainMenu,
-            prefix: '',
-            score: 0
+            score: 0,
+            rounds: [
+                [1, [30]],
+                [2, [15, 15]],
+                [3, [15, 15, 15]]
+            ]
         }
     },
     methods: {
         startGame() {
-            fetch('http://localhost:5050/prefix').then(
-                    response => {
-                        return response.json();
-                    }
-                ).then(
-                    data => {
-                        this.prefix = data.result;
-                        this.currentScreen = Game;
-                    }
-                )
+            this.currentScreen = Game;
         },
         gameOver(score) {
             this.score = score;
