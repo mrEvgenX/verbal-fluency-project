@@ -7,12 +7,13 @@
                 :value="word" type="text"
                 @input="handleInput"
                 @keyup.enter="addTypedWord" />
+            <Timer 
+                :totalSeconds = "totalSeconds"
+                :secondsLeftForEveryStage="secondsLeftForEveryStage" />
             <WordsList :typedWords="typedWords" />
         </div>
         <div class="col-3">
-            <Timer :secondsLeft="secondsLeft" />
             <p>{{score}}</p>
-            {{roundStagesDurations}}
         </div>
     </div>
 </template>
@@ -32,9 +33,10 @@ export default {
             typedWords: [],
             timer: null,
             currentRound: 0,
-            secondsLeft: 0,
-            score: 0,
             currentStage: 0,
+            secondsLeftForEveryStage: [],
+            totalSeconds: 0,
+            score: 0
         }
     },
     methods: {
@@ -77,32 +79,27 @@ export default {
         },
         async setTimer() {
             // init
-            this.secondsLeft = 0;
-            this.roundStagesDurations.forEach((item) => {
-                this.secondsLeft += item;
-            })
-            this.currentStage = 0;
             this.clearTimer();
+            this.roundStagesDurations.forEach((item) => {
+                this.totalSeconds += item;
+            })
+            this.secondsLeftForEveryStage = [...this.roundStagesDurations];
+            let totalStages = this.roundStagesDurations.length;
+            this.currentStage = 0;
             await this.fillPrefixes();
             this.applyStage();
             this.timer = setInterval(
                 () => {
-                    let totalStages = this.roundStagesDurations.length;
-                    if(this.secondsLeft > 0) {
-                        this.secondsLeft--;
-                        this.roundStagesDurations[this.currentStage]--;
-                        if (this.roundStagesDurations[this.currentStage] <= 0) {
-                            this.currentStage++;
-                            if (this.currentStage < totalStages) {
-                                this.applyStage();
-                            } else {
-                                this.clearTimer();
-                                this.$emit('round-finished');
-                            }
+                    let currentSecondsMinusOne = this.secondsLeftForEveryStage[this.currentStage] - 1;
+                    this.$set(this.secondsLeftForEveryStage, this.currentStage, currentSecondsMinusOne);
+                    if (currentSecondsMinusOne <= 0) {
+                        this.currentStage++;
+                        if(this.currentStage >= totalStages) {
+                            this.clearTimer();
+                            this.$emit('round-finished');
+                        } else {
+                            this.applyStage();
                         }
-                    } else {
-                        this.clearTimer();
-                        this.$emit('round-finished');
                     }
                 },
                 1000
