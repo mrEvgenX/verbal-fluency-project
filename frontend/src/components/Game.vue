@@ -4,7 +4,9 @@
             :is="state" 
             :basicPrefixLength="basicPrefixLength"
             :roundStagesDurations="roundStagesDurations"
-            @round-finished="showSubScore"></component>
+            @round-finished="roundFinished"
+            :score="score"
+            @next-round="startGame"></component>
     </div>
 </template>
 
@@ -26,12 +28,21 @@ export default {
     },
     methods: {
         startGame() {
-            this.basicPrefixLength=this.rounds[this.currentRound][0];
-            this.roundStagesDurations=this.rounds[this.currentRound][1];
-            this.state = Game;
+            if (this.currentRound >= this.rounds.length) {
+                this.$emit('game-over', this.score);
+            } else {
+                this.basicPrefixLength=this.rounds[this.currentRound][0];
+                this.roundStagesDurations=this.rounds[this.currentRound][1];
+                this.state = Game;
+                this.currentRound++;
+            }
         },
-        showSubScore() {
+        roundFinished(score) {
+            this.score += score;
             this.state = Score;
+        },
+        gameOver() {
+            
         }
     },
     mounted() {

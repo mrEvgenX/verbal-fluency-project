@@ -96,7 +96,7 @@ export default {
                         this.currentStage++;
                         if(this.currentStage >= totalStages) {
                             this.clearTimer();
-                            this.$emit('round-finished');
+                            this.$emit('round-finished', this.score);
                         } else {
                             this.applyStage();
                         }
