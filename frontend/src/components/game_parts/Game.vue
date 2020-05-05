@@ -73,27 +73,24 @@ export default {
                 this.prefixes.push(basePrefix.substring(0, basePrefix.length - index));
             })
         },
-        applyStage() {
-            this.currentPrefix = this.prefixes[this.currentStage];
-            this.suffix = '';
-        },
-        async setTimer() {
-            // init
+        async init() {
             this.clearTimer();
             this.roundStagesDurations.forEach((item) => {
                 this.totalSeconds += item;
             })
             this.secondsLeftForEveryStage = [...this.roundStagesDurations];
-            let totalStages = this.roundStagesDurations.length;
             this.currentStage = 0;
             await this.fillPrefixes();
             this.applyStage();
+        },
+        setTimer() {
             this.timer = setInterval(
                 () => {
                     let currentSecondsMinusOne = this.secondsLeftForEveryStage[this.currentStage] - 1;
                     this.$set(this.secondsLeftForEveryStage, this.currentStage, currentSecondsMinusOne);
                     if (currentSecondsMinusOne <= 0) {
                         this.currentStage++;
+                        let totalStages = this.roundStagesDurations.length;
                         if(this.currentStage >= totalStages) {
                             this.clearTimer();
                             this.$emit('round-finished', this.score);
@@ -105,6 +102,13 @@ export default {
                 1000
             );
         },
+        applyStage() {
+            if (this.currentStage > 0 && this.suffix.length > 0) {
+                let lastLetterOfPrevPrefix = this.currentPrefix[this.currentPrefix.length-1];
+                this.suffix = lastLetterOfPrevPrefix + this.suffix;
+            }
+            this.currentPrefix = this.prefixes[this.currentStage];
+        },
         clearTimer() {
             if(this.timer) {
                 clearInterval(this.timer);
@@ -112,7 +116,9 @@ export default {
         }
     },
     mounted() {
-        this.setTimer().then(() => {});
+        this.init().then(() => {
+            this.setTimer();
+        });
     },
     computed: {
         word() {
