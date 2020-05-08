@@ -1,7 +1,7 @@
 <template>
     <div class="container score">
         <p>Итоговый счет: {{score}}</p>
-        <button class="btn btn-primary" @click="startGame">Заново</button>
+        <button class="btn btn-primary" @click="toMainMenu">Заново</button>
     </div>
 </template>
 
@@ -11,8 +11,8 @@ export default {
     name: 'Score',
     props: ['score'],
     methods: {
-        startGame() {
-            this.$emit('start-game');
+        toMainMenu() {
+            this.$emit('to-main-menu');
         }
     }
 }

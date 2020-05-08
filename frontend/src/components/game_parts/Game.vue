@@ -4,6 +4,7 @@
             <input
                 v-focus
                 class="form-control"
+                :class="{'is-invalid': lastWordWasInvalid}"
                 :value="word" type="text"
                 @input="handleInput"
                 @keyup.enter="addTypedWord" />
@@ -30,6 +31,8 @@ export default {
             prefixes: [],
             currentPrefix: '',
             suffix: '',
+            lastWordWasInvalid: false,
+            inputValidTimer: null,
             typedWords: [],
             timer: null,
             currentRound: 0,
@@ -48,17 +51,52 @@ export default {
             let notTypedBefore = !this.typedWords.includes(this.word);
             if(notTypedBefore) {
                 fetch('http://localhost:5050/valid?word=' + this.word)
-                    .then(response => {
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
                         let valid = data.result;
+                        this.lastWordWasInvalid = !valid;
                         if (valid) {
                             this.typedWords.push(this.word);
-                            this.suffix = "";
-                            this.score += 1;
+                            switch (this.word.length) {
+                                case 1:
+                                case 2:
+                                case 3:
+                                    this.score += 1;
+                                    break;
+                                case 4:
+                                    this.score += 2;
+                                    break;
+                                case 5:
+                                    this.score += 3;
+                                    break;
+                                case 6:
+                                    this.score += 4;
+                                    break;
+                                case 7:
+                                    this.score += 5;
+                                    break;
+                                default:
+                                    this.score += 6;
+                                    break;
+                            }
+                        } else {
+                            if (this.inputValidTimer) {
+                                clearTimeout(this.inputValidTimer);
+                            }
+                            this.inputValidTimer = setTimeout(() => {
+                                this.lastWordWasInvalid = false;
+                            }, 1000);
                         }
+                        this.suffix = "";
                     })
+            } else {
+                this.lastWordWasInvalid = true;
+                if (this.inputValidTimer) {
+                    clearTimeout(this.inputValidTimer);
+                }
+                this.inputValidTimer = setTimeout(() => {
+                    this.lastWordWasInvalid = false;
+                }, 500);
             }
         },
         async getPrefix(prefixLength) {
@@ -115,10 +153,9 @@ export default {
             }
         }
     },
-    mounted() {
-        this.init().then(() => {
-            this.setTimer();
-        });
+    async mounted() {
+        await this.init()
+        this.setTimer();
     },
     computed: {
         word() {

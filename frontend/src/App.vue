@@ -5,7 +5,8 @@
             @start-game="startGame"
             :rounds="rounds"
             @game-over="gameOver"
-            :score="score"></component>
+            :score="score"
+            @to-main-menu="toMainMenu"></component>
     </div>
 </template>
 
@@ -21,9 +22,9 @@ export default {
             currentScreen: MainMenu,
             score: 0,
             rounds: [
-                [1, [30]],
-                [2, [15, 15]],
-                [3, [15, 15, 15]]
+                [2, [30]],
+                [3, [15, 15]],
+                [4, [15, 15, 15]]
             ]
         }
     },
@@ -34,6 +35,9 @@ export default {
         gameOver(score) {
             this.score = score;
             this.currentScreen = Score;
+        },
+        toMainMenu() {
+            this.currentScreen = MainMenu;
         }
     },
     components: {
